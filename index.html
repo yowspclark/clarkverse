@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>ClarkVerse</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #07111f;
+      color: white;
+    }
+
+    body {
+      position: relative;
+    }
+
+    /* =========================
+       OCEAN BACKGROUND
+    ========================= */
+
+    .ocean {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          to bottom,
+          #07111f 0%,
+          #102b49 45%,
+          #164b68 100%
+        );
+    }
+
+    .moon {
+      position: absolute;
+      top: 9%;
+      right: 12%;
+      width: 85px;
+      height: 85px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 0 35px rgba(255,255,255,.45);
+      opacity: .92;
+    }
+
+    .stars {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.9) 1px, transparent 2px),
+        radial-gradient(circle, rgba(255,255,255,.7) 1px, transparent 2px);
+      background-size: 95px 95px, 145px 145px;
+      background-position: 15px 20px, 60px 55px;
+      opacity: .5;
+    }
+
+    .water {
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      bottom: 0;
+      height: 58%;
+      background:
+        linear-gradient(
+          to bottom,
+          #15516e,
+          #092b46
+        );
+      overflow: hidden;
+    }
+
+    .wave {
+      position: absolute;
+      left: -10%;
+      width: 120%;
+      height: 90px;
+      border-radius: 50%;
+      background: rgba(80,170,200,.22);
+      animation: waveMove 7s linear infinite;
+    }
+
+    .wave.one {
+      top: 12%;
+    }
+
+    .wave.two {
+      top: 32%;
+      opacity: .65;
+      animation-duration: 9s;
+      animation-direction: reverse;
+    }
+
+    .wave.three {
+      top: 55%;
+      opacity: .45;
+      animation-duration: 11s;
+    }
+
+    @keyframes waveMove {
+      from {
+        transform: translateX(-8%);
+      }
+
+      to {
+        transform: translateX(8%);
+      }
+    }
+
+    /* =========================
+       SHIP
+    ========================= */
+
+    .ship-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: 19%;
+      transform: translateX(-50%);
+      animation: shipFloat 3.5s ease-in-out infinite;
+      z-index: 5;
+    }
+
+    .ship {
+      position: relative;
+      width: 190px;
+      height: 145px;
+    }
+
+    .hull {
+      position: absolute;
+      left: 15px;
+      bottom: 0;
+      width: 160px;
+      height: 55px;
+      background: #402719;
+      border-radius: 10px 10px 55px 55px;
+      border-bottom: 9px solid #24150e;
+      transform: perspective(200px) rotateX(-8deg);
+    }
+
+    .deck {
+      position: absolute;
+      left: 25px;
+      bottom: 45px;
+      width: 140px;
+      height: 14px;
+      background: #6c452b;
+      border-radius: 8px;
+    }
+
+    .mast {
+      position: absolute;
+      left: 92px;
+      bottom: 48px;
+      width: 9px;
+      height: 94px;
+      border-radius: 5px;
+      background: #5b3823;
+    }
+
+    .sail {
+      position: absolute;
+      left: 101px;
+      bottom: 87px;
+      width: 62px;
+      height: 55px;
+      background: #eee7d5;
+      clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 75%);
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
+    .flag {
+      position: absolute;
+      left: 99px;
+      bottom: 137px;
+      font-size: 24px;
+      transform: rotate(-3deg);
+    }
+
+    .pirate {
+      position: absolute;
+      left: 46px;
+      bottom: 51px;
+      font-size: 40px;
+    }
+
+    @keyframes shipFloat {
+      0%, 100% {
+        transform:
+          translateX(-50%)
+          translateY(0)
+          rotate(-1deg);
+      }
+
+      50% {
+        transform:
+          translateX(-50%)
+          translateY(-10px)
+          rotate(1deg);
+      }
+    }
+
+    /* =========================
+       MAIN CARD
+    ========================= */
+
+    .content {
+      position: relative;
+      z-index: 20;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 7vh 20px 30px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      padding: 28px 22px;
+      border-radius: 28px;
+      background: rgba(7,17,31,.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        0 20px 70px rgba(0,0,0,.45);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 54px;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #b8c4d6;
+      margin: 8px 0 25px;
+      line-height: 1.45;
+    }
+
+    /* =========================
+       TABS
+    ========================= */
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border: 0;
+      border-radius: 13px;
+      background: #1b2940;
+      color: #aebbd0;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #5865f2;
+      color: white;
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #c9d2df;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,.08);
+      outline: none;
+      border-radius: 14px;
+      background: #17243a;
+      color: white;
+      font-size: 16px;
+    }
+
+    input:focus {
+      border-color: #5865f2;
+    }
+
+    input::placeholder {
+      color: #718096;
+    }
+
+    .submit {
+      width: 100%;
+      margin-top: 5px;
+      padding: 16px;
+      border: 0;
+      border-radius: 15px;
+      background: #5865f2;
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(88,101,242,.28);
+    }
+
+    .submit:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+      color: #9ba8bd;
+      line-height: 1.4;
+    }
+
+    .small {
+      margin-top: 13px;
+      text-align: center;
+      color: #7f8da3;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .footer {
+      position: absolute;
+      z-index: 30;
+      left: 0;
+      right: 0;
+      bottom: 14px;
+      text-align: center;
+      color: rgba(255,255,255,.5);
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ocean">
+
+    <div class="stars"></div>
+
+    <div class="moon"></div>
+
+    <div class="water">
+
+      <div class="wave one"></div>
+      <div class="wave two"></div>
+      <div class="wave three"></div>
+
+    </div>
+
+    <div class="ship-wrap">
+
+      <div class="ship">
+
+        <div class="hull"></div>
+
+        <div class="deck"></div>
+
+        <div class="mast"></div>
+
+        <div class="sail"></div>
+
+        <div class="flag">
+          🏴‍☠️
+        </div>
+
+        <div class="pirate">
+          🏴‍☠️
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <main class="content">
+
+    <section class="card">
+
+      <div class="logo">
+        🏴‍☠️
+      </div>
+
+      <h1>
+        ClarkVerse
+      </h1>
+
+      <div class="subtitle">
+        Create your Verse.<br>
+        Load it onto the Ship. 🚢
+      </div>
+
+
+      <div class="tabs">
+
+        <button
+          id="signUpTab"
+          class="tab active"
+          onclick="showSignUp()">
+          Sign Up
+        </button>
+
+        <button
+          id="signInTab"
+          class="tab"
+          onclick="showSignIn()">
+          Sign In
+        </button>
+
+      </div>
+
+
+      <form
+        id="authForm"
+        onsubmit="handleAuth(event)">
+
+        <div class="field">
+
+          <label for="email">
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            autocomplete="new-password"
+            placeholder="At least 6 characters"
+            minlength="6"
+            required>
+
+        </div>
+
+
+        <button
+          id="submitButton"
+          class="submit"
+          type="submit">
+          Board the Ship? 🏴‍☠️
+        </button>
+
+      </form>
+
+
+      <div
+        id="status"
+        class="status">
+      </div>
+
+
+      <div class="small">
+        By continuing, you agree to review the
+        ClarkVerse Terms, Privacy Policy, and Rules.
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div class="footer">
+    © 2026 ClarkVerse
+  </div>
+
+
+  <script>
+
+    /*
+    ========================================
+    SUPABASE
+    ========================================
+    */
+
+    const SUPABASE_URL =
+      "https://berkdlglcktrpsrmcfxk.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_VcCBURG2CreUEmvkxDa3RQ_EkK1WZlq";
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    /*
+    ========================================
+    AUTH MODE
+    ========================================
+    */
+
+    let authMode = "signup";
+
+
+    function showSignUp() {
+
+      authMode = "signup";
+
+      document
+        .getElementById("signUpTab")
+        .classList.add("active");
+
+      document
+        .getElementById("signInTab")
+        .classList.remove("active");
+
+      document
+        .getElementById("submitButton")
+        .textContent =
+        "Board the Ship? 🏴‍☠️";
+
+      document
+        .getElementById("password")
+        .setAttribute(
+          "autocomplete",
+          "new-password"
+        );
+
+      clearStatus();
+    }
+
+
+    function showSignIn() {
+
+      authMode = "signin";
+
+      document
+        .getElementById("signInTab")
+        .classList.add("active");
+
+      document
+        .getElementById("signUpTab")
+        .classList.remove("active");
+
+      document
+        .getElementById("submitButton")
+        .textContent =
+        "Return to the Ship 🚢";
+
+      document
+        .getElementById("password")
+        .setAttribute(
+          "autocomplete",
+          "current-password"
+        );
+
+      clearStatus();
+    }
+
+
+    /*
+    ========================================
+    SIGN UP / SIGN IN
+    ========================================
+    */
+
+    async function handleAuth(event) {
+
+      event.preventDefault();
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+      const status =
+        document
+          .getElementById("status");
+
+      const button =
+        document
+          .getElementById("submitButton");
+
+
+      if (!email || !password) {
+
+        status.textContent =
+          "Please enter your email and password.";
+
+        return;
+      }
+
+
+      if (password.length < 6) {
+
+        status.textContent =
+          "Your password must be at least 6 characters.";
+
+        return;
+      }
+
+
+      button.disabled = true;
+
+      status.textContent =
+        authMode === "signup"
+          ? "Preparing your ship... 🚢"
+          : "Signing you in...";
+
+
+      try {
+
+        let result;
+
+
+        /*
+        ================================
+        SIGN UP
+        ================================
+        */
+
+        if (authMode === "signup") {
+
+          result =
+            await supabaseClient.auth.signUp({
+
+              email: email,
+
+              password: password,
+
+              options: {
+
+                emailRedirectTo:
+                  window.location.origin +
+                  "/terms.html"
+
+              }
+
+            });
+
+        }
+
+
+        /*
+        ================================
+        SIGN IN
+        ================================
+        */
+
+        else {
+
+          result =
+            await supabaseClient.auth.signInWithPassword({
+
+              email: email,
+
+              password: password
+
+            });
+
+        }
+
+
+        if (result.error) {
+
+          throw result.error;
+
+        }
+
+
+        /*
+        ================================
+        SUCCESS
+        ================================
+        */
+
+        if (
+          authMode === "signup" &&
+          result.data.user &&
+          !result.data.session
+        ) {
+
+          status.textContent =
+            "Check your email to confirm your account.";
+
+          button.disabled = false;
+
+          return;
+
+        }
+
+
+        status.textContent =
+          "Welcome aboard! 🚢";
+
+
+        /*
+        IMPORTANT:
+        The old destination was feed.html.
+
+        The new destination is TERMS.HTML.
+        */
+
+        setTimeout(
+          function() {
+
+            window.location.href =
+              "terms.html";
+
+          },
+          500
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        let message =
+          "Something went wrong. Please try again.";
+
+
+        if (error.message) {
+
+          message =
+            error.message;
+
+        }
+
+
+        if (
+          error.message &&
+          error.message
+            .toLowerCase()
+            .includes("invalid login credentials")
+        ) {
+
+          message =
+            "That email or password is incorrect.";
+
+        }
+
+
+        if (
+          error.message &&
+          error.message
+            .toLowerCase()
+            .includes("user already registered")
+        ) {
+
+          message =
+            "That email is already registered. Try signing in.";
+
+        }
+
+
+        status.textContent =
+          message;
+
+        button.disabled = false;
+
+      }
+
+    }
+
+
+    /*
+    ========================================
+    STATUS
+    ========================================
+    */
+
+    function clearStatus() {
+
+      document
+        .getElementById("status")
+        .textContent = "";
+
+    }
+
+
+    /*
+    ========================================
+    CHECK EXISTING SESSION
+    ========================================
+
+    If somebody is already signed in,
+    send them to Terms for this new flow.
+    ========================================
+    */
+
+    async function checkExistingSession() {
+
+      try {
+
+        const {
+          data
+        } =
+          await supabaseClient.auth.getSession();
+
+
+        if (data.session) {
+
+          /*
+          We are intentionally sending
+          existing users to terms for now.
+
+          Later, Supabase can remember
+          whether they already agreed.
+          */
+
+          window.location.href =
+            "terms.html";
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Session check failed:",
+          error
+        );
+
+      }
+
+    }
+
+
+    checkExistingSession();
+
+  </script>
+
+</body>
+</html>
