@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ClarkVerse — Verses</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    button {
+      border: 0;
+      color: white;
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* =========================
+       VERSE FEED
+    ========================= */
+
+    .feed {
+      width: 100%;
+      height: 100dvh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+    }
+
+    .feed::-webkit-scrollbar {
+      display: none;
+    }
+
+    .verse {
+      position: relative;
+      width: 100%;
+      height: 100dvh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      overflow: hidden;
+      background: linear-gradient(145deg, #07111f, #263149);
+    }
+
+    .verse-background {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      background:
+        linear-gradient(
+          145deg,
+          #07111f,
+          #263149,
+          #101827
+        );
+    }
+
+    .verse-background::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(0,0,0,.15),
+          transparent 40%,
+          rgba(0,0,0,.7)
+        );
+    }
+
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar {
+      position: fixed;
+      z-index: 50;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 900;
+      text-shadow: 0 2px 10px #000;
+    }
+
+    .flag {
+      position: absolute;
+      right: 15px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(8px);
+      font-size: 23px;
+      pointer-events: auto;
+    }
+
+    /* =========================
+       VERSE INFO
+    ========================= */
+
+    .info {
+      position: absolute;
+      z-index: 10;
+      left: 15px;
+      right: 90px;
+      bottom: 95px;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .profile-picture {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #263149;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      padding: 0;
+    }
+
+    .username {
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .caption {
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .caption-title {
+      font-weight: 900;
+      margin-bottom: 3px;
+    }
+
+    /* =========================
+       ACTIONS
+    ========================= */
+
+    .actions {
+      position: absolute;
+      z-index: 20;
+      right: 10px;
+      bottom: 105px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .action {
+      width: 58px;
+      min-height: 58px;
+      background: transparent;
+      font-size: 28px;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    .action span {
+      display: block;
+      font-size: 11px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .liked {
+      color: #ff3040;
+    }
+
+    /* =========================
+       CREATE VERSE BUTTON
+    ========================= */
+
+    .create-button {
+      position: fixed;
+      z-index: 60;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: #5865f2;
+      font-size: 29px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    }
+
+    /* =========================
+       PANELS
+    ========================= */
+
+    .panel {
+      position: fixed;
+      z-index: 100;
+      inset: 0;
+      background: #07111f;
+      display: none;
+      overflow-y: auto;
+    }
+
+    .panel.open {
+      display: block;
+    }
+
+    .panel-back {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #263149;
+      font-size: 20px;
+      z-index: 120;
+    }
+
+    .panel-content {
+      padding: 80px 20px 30px;
+    }
+
+    .panel-title {
+      text-align: center;
+      font-size: 25px;
+      font-weight: 900;
+      margin-bottom: 25px;
+    }
+
+    /* =========================
+       COMMENTS
+    ========================= */
+
+    .comment {
+      background: #141d31;
+      border-radius: 15px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .comment-user {
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .comment-form {
+      display: flex;
+      gap: 8px;
+      position: sticky;
+      bottom: 0;
+      background: #07111f;
+      padding: 12px 0;
+    }
+
+    .comment-input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px;
+      border: 0;
+      outline: 0;
+      border-radius: 14px;
+      background: #263149;
+      color: white;
+      font-size: 15px;
+    }
+
+    .comment-send {
+      width: 52px;
+      border-radius: 14px;
+      background: #5865f2;
+      font-size: 20px;
+    }
+
+    /* =========================
+       PROFILE
+    ========================= */
+
+    .profile-avatar {
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      background: #263149;
+      border: 3px solid white;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+    }
+
+    .profile-name {
+      text-align: center;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .profile-bio {
+      text-align: center;
+      color: #9ba8bd;
+      margin: 10px auto 30px;
+      max-width: 350px;
+      line-height: 1.5;
+    }
+
+    .profile-section {
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    /* =========================
+       CREATE VERSE
+    ========================= */
+
+    .camera-area {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .camera-icon {
+      font-size: 80px;
+      margin-bottom: 10px;
+    }
+
+    .camera-text {
+      color: #9ba8bd;
+      line-height: 1.5;
+      max-width: 360px;
+      margin: 12px auto 25px;
+    }
+
+    .permission-button {
+      width: 100%;
+      max-width: 360px;
+      padding: 17px;
+      border-radius: 15px;
+      background: #5865f2;
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .permission-button.secondary {
+      background: #263149;
+    }
+
+    .permission-status {
+      min-height: 24px;
+      margin-top: 10px;
+      color: #9ba8bd;
+      font-size: 14px;
+    }
+
+    /* =========================
+       CAMERA PREVIEW
+    ========================= */
+
+    .camera-preview {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .camera-preview video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 9 / 16;
+      object-fit: cover;
+    }
+
+    .camera-preview.show {
+      display: block;
+    }
+
+    .record-button {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #ff3040;
+      border: 5px solid white;
+      font-size: 0;
+      margin-top: 10px;
+    }
+
+    .record-button.recording {
+      background: #fff;
+      border-color: #ff3040;
+    }
+
+    /* =========================
+       TOAST
+    ========================= */
+
+    .toast {
+      position: fixed;
+      z-index: 500;
+      left: 50%;
+      bottom: 100px;
+      transform: translateX(-50%);
+      padding: 12px 17px;
+      background: rgba(0,0,0,.85);
+      border-radius: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+
+    <div class="title">
+      Verses
+    </div>
+
+    <button
+      class="flag"
+      onclick="goBackToWelcome()"
+      aria-label="Back to ClarkVerse">
+      🏴
+    </button>
+
+  </div>
+
+
+  <!-- =========================
+       VERSE FEED
+  ========================== -->
+
+  <main class="feed">
+
+    <!-- VERSE 1 -->
+
+    <section class="verse">
+
+      <div class="verse-background">
+        🏴‍☠️
+      </div>
+
+      <div class="info">
+
+        <div class="profile-row">
+
+          <button
+            class="profile-picture"
+            onclick="openProfile('ClarkUser')">
+            👤
+          </button>
+
+          <div class="username">
+            @ClarkUser
+          </div>
+
+        </div>
+
+        <div class="caption">
+
+          <div class="caption-title">
+            My first Verse 🏴‍☠️
+          </div>
+
+          Welcome to ClarkVerse!
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="action"
+          onclick="likeVerse(this)">
+          ♡
+          <span>Like</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="openComments()">
+          💬
+          <span>Comments</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="shareVerse()">
+          ↗️
+          <span>Share</span>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- VERSE 2 -->
+
+    <section class="verse">
+
+      <div class="verse-background">
+        🌊
+      </div>
+
+      <div class="info">
+
+        <div class="profile-row">
+
+          <button
+            class="profile-picture"
+            onclick="openProfile('CaptainClark')">
+            🏴‍☠️
+          </button>
+
+          <div class="username">
+            @CaptainClark
+          </div>
+
+        </div>
+
+        <div class="caption">
+
+          <div class="caption-title">
+            Another Verse 🌊
+          </div>
+
+          Swipe up for another Verse.
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="action"
+          onclick="likeVerse(this)">
+          ♡
+          <span>Like</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="openComments()">
+          💬
+          <span>Comments</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="shareVerse()">
+          ↗️
+          <span>Share</span>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- VERSE 3 -->
+
+    <section class="verse">
+
+      <div class="verse-background">
+        🎬
+      </div>
+
+      <div class="info">
+
+        <div class="profile-row">
+
+          <button
+            class="profile-picture"
+            onclick="openProfile('VerseCreator')">
+            🎬
+          </button>
+
+          <div class="username">
+            @VerseCreator
+          </div>
+
+        </div>
+
+        <div class="caption">
+
+          <div class="caption-title">
+            My latest Verse 🎬
+          </div>
+
+          Every day is another Verse.
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="action"
+          onclick="likeVerse(this)">
+          ♡
+          <span>Like</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="openComments()">
+          💬
+          <span>Comments</span>
+        </button>
+
+        <button
+          class="action"
+          onclick="shareVerse()">
+          ↗️
+          <span>Share</span>
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- CREATE VERSE -->
+
+  <button
+    class="create-button"
+    onclick="openCreate()"
+    aria-label="Create a Verse">
+    📷
+  </button>
+
+
+  <!-- =========================
+       COMMENTS PANEL
+  ========================== -->
+
+  <div
+    id="commentsPanel"
+    class="panel">
+
+    <button
+      class="panel-back"
+      onclick="closePanel('commentsPanel')">
+      ←
+    </button>
+
+    <div class="panel-content">
+
+      <div class="panel-title">
+        Comments
+      </div>
+
+      <div class="comment">
+
+        <div class="comment-user">
+          @ClarkUser
+        </div>
+
+        Welcome to ClarkVerse! 🔥
+
+      </div>
+
+      <div class="comment">
+
+        <div class="comment-user">
+          @CaptainClark
+        </div>
+
+        This Verse is awesome!
+
+      </div>
+
+      <form
+        class="comment-form"
+        onsubmit="addComment(event)">
+
+        <input
+          id="commentInput"
+          class="comment-input"
+          placeholder="Add a comment..."
+          maxlength="300">
+
+        <button
+          class="comment-send"
+          type="submit">
+          ➤
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       PROFILE PANEL
+  ========================== -->
+
+  <div
+    id="profilePanel"
+    class="panel">
+
+    <button
+      class="panel-back"
+      onclick="closePanel('profilePanel')">
+      ←
+    </button>
+
+    <div class="panel-content">
+
+      <div class="profile-avatar">
+        👤
+      </div>
+
+      <div
+        id="profileName"
+        class="profile-name">
+        @User
+      </div>
+
+      <div class="profile-bio">
+        Welcome to my ClarkVerse profile. 🏴‍☠️
+      </div>
+
+      <div class="profile-section">
+        Verses
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       CREATE VERSE PANEL
+  ========================== -->
+
+  <div
+    id="createPanel"
+    class="panel">
+
+    <button
+      class="panel-back"
+      onclick="closePanel('createPanel')">
+      ←
+    </button>
+
+    <div class="panel-content">
+
+      <div class="camera-area">
+
+        <div class="camera-icon">
+          📷
+        </div>
+
+        <div class="panel-title">
+          Create a Verse
+        </div>
+
+        <div class="camera-text">
+          ClarkVerse needs access to your camera
+          and microphone so you can record a Verse
+          with video and audio.
+        </div>
+
+
+        <!-- PERMISSION BUTTON -->
+
+        <button
+          id="permissionButton"
+          class="permission-button"
+          onclick="requestCameraAndMicrophone()">
+          📷 Allow Camera & Microphone
+        </button>
+
+
+        <!-- PREVIEW -->
+
+        <div
+          id="cameraPreview"
+          class="camera-preview">
+
+          <video
+            id="previewVideo"
+            autoplay
+            muted
+            playsinline>
+          </video>
+
+        </div>
+
+
+        <!-- RECORD BUTTON -->
+
+        <button
+          id="recordButton"
+          class="record-button"
+          onclick="toggleRecording()"
+          style="display:none;">
+        </button>
+
+
+        <div
+          id="permissionStatus"
+          class="permission-status">
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- TOAST -->
+
+  <div
+    id="toast"
+    class="toast">
+  </div>
+
+</div>
+
+
+<script>
+
+  /*
+  ========================================
+  CLARKVERSE NAVIGATION
+  ========================================
+  */
+
+  function goBackToWelcome() {
+
+    window.location.href =
+      "https://yowspclark.github.io/clarkverse/";
+
+  }
+
+
+  /*
+  ========================================
+  LIKES
+  ========================================
+  */
+
+  function likeVerse(button) {
+
+    const liked =
+      button.classList.contains("liked");
+
+    if (liked) {
+
+      button.classList.remove("liked");
+
+      button.innerHTML =
+        "♡<span>Like</span>";
+
+    } else {
+
+      button.classList.add("liked");
+
+      button.innerHTML =
+        "♥<span>Liked</span>";
+
+    }
+
+  }
+
+
+  /*
+  ========================================
+  COMMENTS
+  ========================================
+  */
+
+  function openComments() {
+
+    document
+      .getElementById("commentsPanel")
+      .classList.add("open");
+
+  }
+
+
+  function addComment(event) {
+
+    event.preventDefault();
+
+    const input =
+      document.getElementById(
+        "commentInput"
+      );
+
+    const text =
+      input.value.trim();
+
+    if (!text) {
+      return;
+    }
+
+    const comment =
+      document.createElement("div");
+
+    comment.className =
+      "comment";
+
+    comment.innerHTML = `
+      <div class="comment-user">
+        @You
+      </div>
+      ${escapeHtml(text)}
+    `;
+
+    const form =
+      document.querySelector(
+        ".comment-form"
+      );
+
+    form.before(comment);
+
+    input.value = "";
+
+    showToast(
+      "Comment added 💬"
+    );
+
+  }
+
+
+  /*
+  ========================================
+  PROFILE
+  ========================================
+  */
+
+  function openProfile(username) {
+
+    document
+      .getElementById("profileName")
+      .textContent =
+      "@" + username;
+
+    document
+      .getElementById("profilePanel")
+      .classList.add("open");
+
+  }
+
+
+  /*
+  ========================================
+  CREATE VERSE
+  ========================================
+  */
+
+  function openCreate() {
+
+    document
+      .getElementById("createPanel")
+      .classList.add("open");
+
+  }
+
+
+  /*
+  ========================================
+  CAMERA + MICROPHONE PERMISSION
+  ========================================
+  */
+
+  let cameraStream = null;
+
+  async function requestCameraAndMicrophone() {
+
+    const status =
+      document.getElementById(
+        "permissionStatus"
+      );
+
+    const button =
+      document.getElementById(
+        "permissionButton"
+      );
+
+    try {
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+
+        status.textContent =
+          "Camera access isn't supported by this browser.";
+
+        return;
+
+      }
+
+
+      status.textContent =
+        "Requesting camera and microphone permission...";
+
+
+      /*
+      This triggers the REAL browser
+      permission request.
+      */
+
+      cameraStream =
+        await navigator.mediaDevices.getUserMedia({
+
+          video: {
+            facingMode: "user"
+          },
+
+          audio: true
+
+        });
+
+
+      /*
+      Show the live camera.
+      */
+
+      const video =
+        document.getElementById(
+          "previewVideo"
+        );
+
+      video.srcObject =
+        cameraStream;
+
+
+      document
+        .getElementById(
+          "cameraPreview"
+        )
+        .classList.add("show");
+
+
+      document
+        .getElementById(
+          "recordButton"
+        )
+        .style.display =
+        "inline-block";
+
+
+      button.textContent =
+        "✅ Camera & Microphone Allowed";
+
+
+      button.style.background =
+        "#16834b";
+
+
+      status.textContent =
+        "You're ready to create a Verse! 🎥";
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (
+        error.name ===
+        "NotAllowedError"
+      ) {
+
+        status.textContent =
+          "Camera or microphone permission was denied. You can allow it in your browser settings.";
+
+      } else if (
+        error.name ===
+        "NotFoundError"
+      ) {
+
+        status.textContent =
+          "No camera or microphone was found on this device.";
+
+      } else {
+
+        status.textContent =
+          "We couldn't access the camera and microphone. Please try again.";
+
+      }
+
+    }
+
+  }
+
+
+  /*
+  ========================================
+  RECORDING
+  ========================================
+  */
+
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recording = false;
+
+  function toggleRecording() {
+
+    if (!cameraStream) {
+
+      showToast(
+        "Allow camera and microphone first."
+      );
+
+      return;
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "recordButton"
+      );
+
+
+    if (!recording) {
+
+      recordedChunks = [];
+
+
+      const options = {
+        mimeType: "video/webm"
+      };
+
+
+      try {
+
+        mediaRecorder =
+          new MediaRecorder(
+            cameraStream,
+            options
+          );
+
+      } catch (error) {
+
+        mediaRecorder =
+          new MediaRecorder(
+            cameraStream
+          );
+
+      }
+
+
+      mediaRecorder.ondataavailable =
+        function(event) {
+
+          if (
+            event.data &&
+            event.data.size > 0
+          ) {
+
+            recordedChunks.push(
+              event.data
+            );
+
+          }
+
+        };
+
+
+      mediaRecorder.onstop =
+        function() {
+
+          showToast(
+            "Verse recording finished! 🎬"
+          );
+
+        };
+
+
+      mediaRecorder.start();
+
+      recording = true;
+
+      button.classList.add(
+        "recording"
+      );
+
+      showToast(
+        "Recording your Verse..."
+      );
+
+
+    } else {
+
+      mediaRecorder.stop();
+
+      recording = false;
+
+      button.classList.remove(
+        "recording"
+      );
+
+    }
+
+  }
+
+
+  /*
+  ========================================
+  CLOSE PANELS
+  ========================================
+  */
+
+  function closePanel(id) {
+
+    document
+      .getElementById(id)
+      .classList.remove("open");
+
+  }
+
+
+  /*
+  ========================================
+  STOP CAMERA WHEN LEAVING
+  ========================================
+  */
+
+  function stopCamera() {
+
+    if (cameraStream) {
+
+      cameraStream
+        .getTracks()
+        .forEach(
+          track => track.stop()
+        );
+
+      cameraStream = null;
+
+    }
+
+  }
+
+
+  /*
+  ========================================
+  SHARE
+  ========================================
+  */
+
+  async function shareVerse() {
+
+    const data = {
+
+      title:
+        "ClarkVerse",
+
+      text:
+        "Check out this Verse on ClarkVerse!",
+
+      url:
+        window.location.href
+
+    };
+
+
+    if (
+      navigator.share
+    ) {
+
+      try {
+
+        await navigator.share(
+          data
+        );
+
+      } catch (error) {}
+
+    } else {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        showToast(
+          "Verse link copied!"
+        );
+
+      } catch (error) {
+
+        showToast(
+          "Sharing isn't available."
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /*
+  ========================================
+  TOAST
+  ========================================
+  */
+
+  let toastTimer;
+
+  function showToast(text) {
+
+    const toast =
+      document.getElementById(
+        "toast"
+      );
+
+    toast.textContent =
+      text;
+
+    toast.classList.add(
+      "show"
+    );
+
+    clearTimeout(
+      toastTimer
+    );
+
+    toastTimer =
+      setTimeout(
+        function() {
+
+          toast.classList.remove(
+            "show"
+          );
+
+        },
+        2200
+      );
+
+  }
+
+
+  /*
+  ========================================
+  ESCAPE USER COMMENTS
+  ========================================
+  */
+
+  function escapeHtml(text) {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+    div.textContent =
+      text;
+
+    return div.innerHTML;
+
+  }
+
+
+  /*
+  ========================================
+  STOP CAMERA WHEN PAGE CLOSES
+  ========================================
+  */
+
+  window.addEventListener(
+    "beforeunload",
+    stopCamera
+  );
+
+</script>
+
+</body>
+</html>
