@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ClarkVerse — Ship</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+button {
+  border: 0;
+  color: white;
+  cursor: pointer;
+}
+
+.app {
+  width: 100%;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =========================
+   SHIP FEED
+========================= */
+
+.feed {
+  width: 100%;
+  height: 100dvh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.feed::-webkit-scrollbar {
+  display: none;
+}
+
+.verse {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  background: linear-gradient(145deg, #07111f, #263149);
+}
+
+.verse-background {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100px;
+  background:
+    linear-gradient(
+      145deg,
+      #07111f,
+      #263149,
+      #101827
+    );
+}
+
+.verse-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,.15),
+      transparent 40%,
+      rgba(0,0,0,.7)
+    );
+}
+
+/* =========================
+   VIDEO VERSE
+========================= */
+
+.verse-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+/* IMPORTANT:
+   No transform: scaleX(-1)
+   Video stays NORMAL / unmirrored.
+*/
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 900;
+  text-shadow: 0 2px 10px #000;
+}
+
+.flag {
+  position: absolute;
+  right: 15px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
+  font-size: 23px;
+  pointer-events: auto;
+}
+
+/* =========================
+   VERSE INFO
+========================= */
+
+.info {
+  position: absolute;
+  z-index: 10;
+  left: 15px;
+  right: 90px;
+  bottom: 95px;
+  text-shadow: 0 2px 8px #000;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.profile-picture {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #263149;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  padding: 0;
+}
+
+.username {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.caption {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.caption-title {
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+  position: absolute;
+  z-index: 20;
+  right: 10px;
+  bottom: 105px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.action {
+  width: 58px;
+  min-height: 58px;
+  background: transparent;
+  font-size: 28px;
+  text-shadow: 0 2px 8px #000;
+}
+
+.action span {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.liked {
+  color: #ff3040;
+}
+
+/* =========================
+   CREATE VERSE BUTTON
+========================= */
+
+.create-button {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #5865f2;
+  font-size: 29px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+
+/* =========================
+   PANELS
+========================= */
+
+.panel {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: #07111f;
+  display: none;
+  overflow-y: auto;
+}
+
+.panel.open {
+  display: block;
+}
+
+.panel-back {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #263149;
+  font-size: 20px;
+  z-index: 120;
+}
+
+.panel-content {
+  padding: 80px 20px 30px;
+}
+
+.panel-title {
+  text-align: center;
+  font-size: 25px;
+  font-weight: 900;
+  margin-bottom: 25px;
+}
+
+/* =========================
+   COMMENTS
+========================= */
+
+.comment {
+  background: #141d31;
+  border-radius: 15px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.comment-user {
+  font-weight: 900;
+  margin-bottom: 5px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: #07111f;
+  padding: 12px 0;
+}
+
+.comment-input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border: 0;
+  outline: 0;
+  border-radius: 14px;
+  background: #263149;
+  color: white;
+  font-size: 15px;
+}
+
+.comment-send {
+  width: 52px;
+  border-radius: 14px;
+  background: #5865f2;
+  font-size: 20px;
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-avatar {
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+  background: #263149;
+  border: 3px solid white;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+}
+
+.profile-name {
+  text-align: center;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.profile-bio {
+  text-align: center;
+  color: #9ba8bd;
+  margin: 10px auto 30px;
+  max-width: 350px;
+  line-height: 1.5;
+}
+
+.profile-section {
+  font-size: 19px;
+  font-weight: 900;
+}
+
+/* =========================
+   CREATE VERSE
+========================= */
+
+.camera-area {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.camera-icon {
+  font-size: 80px;
+  margin-bottom: 10px;
+}
+
+.camera-text {
+  color: #9ba8bd;
+  line-height: 1.5;
+  max-width: 360px;
+  margin: 12px auto 25px;
+}
+
+.permission-button {
+  width: 100%;
+  max-width: 360px;
+  padding: 17px;
+  border-radius: 15px;
+  background: #5865f2;
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.permission-button.secondary {
+  background: #263149;
+}
+
+.permission-status {
+  min-height: 24px;
+  margin-top: 10px;
+  color: #9ba8bd;
+  font-size: 14px;
+}
+
+/* =========================
+   CAMERA PREVIEW
+========================= */
+
+.camera-preview {
+  display: none;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+}
+
+.camera-preview video {
+  width: 100%;
+  display: block;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+
+  /* FIXED: NOT MIRRORED */
+  transform: none;
+}
+
+.camera-preview.show {
+  display: block;
+}
+
+.record-button {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #ff3040;
+  border: 5px solid white;
+  font-size: 0;
+  margin-top: 10px;
+}
+
+.record-button.recording {
+  background: #fff;
+  border-color: #ff3040;
+}
+
+/* =========================
+   UPLOAD AREA
+========================= */
+
+.upload-section {
+  width: 100%;
+  max-width: 500px;
+  margin: 25px auto 0;
+}
+
+.upload-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  color: #7f8ba0;
+  font-size: 13px;
+}
+
+.upload-divider::before,
+.upload-divider::after {
+  content: "";
+  height: 1px;
+  background: #263149;
+  flex: 1;
+}
+
+.upload-button {
+  width: 100%;
+  padding: 17px;
+  border-radius: 15px;
+  background: #263149;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+#videoUpload {
+  display: none;
+}
+
+/* =========================
+   FULL SCREEN VIDEO EDITOR
+========================= */
+
+.editor {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  display: none;
+  flex-direction: column;
+}
+
+.editor.open {
+  display: flex;
+}
+
+.editor-video-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.editor-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+  /* NEVER MIRROR THE EDITOR VIDEO */
+  transform: none;
+}
+
+.editor-top {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 18px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,.7),
+    transparent
+  );
+}
+
+.editor-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(30,40,60,.85);
+  font-size: 21px;
+}
+
+.editor-heading {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.editor-bottom {
+  padding: 15px;
+  padding-bottom: max(15px, env(safe-area-inset-bottom));
+  background: #07111f;
+}
+
+.editor-tools {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+.editor-tool {
+  flex: 0 0 auto;
+  padding: 11px 15px;
+  border-radius: 12px;
+  background: #263149;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.load-ship-button {
+  width: 100%;
+  padding: 17px;
+  border-radius: 15px;
+  background: #5865f2;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast {
+  position: fixed;
+  z-index: 1500;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  padding: 12px 17px;
+  background: rgba(0,0,0,.85);
+  border-radius: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<div class="topbar">
+
+  <div class="title">
+    Ship
+  </div>
+
+  <button
+    class="flag"
+    onclick="goBackToWelcome()"
+    aria-label="Back to ClarkVerse">
+    🏴
+  </button>
+
+</div>
+
+
+<!-- =========================
+     SHIP FEED
+========================= -->
+
+<main class="feed">
+
+<section class="verse">
+
+  <div class="verse-background">
+    🏴‍☠️
+  </div>
+
+  <div class="info">
+
+    <div class="profile-row">
+
+      <button
+        class="profile-picture"
+        onclick="openProfile('ClarkUser')">
+        👤
+      </button>
+
+      <div class="username">
+        @ClarkUser
+      </div>
+
+    </div>
+
+    <div class="caption">
+
+      <div class="caption-title">
+        My first Verse 🏴‍☠️
+      </div>
+
+      Welcome to ClarkVerse!
+
+    </div>
+
+  </div>
+
+  <div class="actions">
+
+    <button
+      class="action"
+      onclick="likeVerse(this)">
+      ♡
+      <span>Like</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="openComments()">
+      💬
+      <span>Comments</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="shareVerse()">
+      ↗️
+      <span>Share</span>
+    </button>
+
+  </div>
+
+</section>
+
+
+<section class="verse">
+
+  <div class="verse-background">
+    🌊
+  </div>
+
+  <div class="info">
+
+    <div class="profile-row">
+
+      <button
+        class="profile-picture"
+        onclick="openProfile('CaptainClark')">
+        🏴‍☠️
+      </button>
+
+      <div class="username">
+        @CaptainClark
+      </div>
+
+    </div>
+
+    <div class="caption">
+
+      <div class="caption-title">
+        Another Verse 🌊
+      </div>
+
+      Swipe up for another Verse.
+
+    </div>
+
+  </div>
+
+  <div class="actions">
+
+    <button
+      class="action"
+      onclick="likeVerse(this)">
+      ♡
+      <span>Like</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="openComments()">
+      💬
+      <span>Comments</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="shareVerse()">
+      ↗️
+      <span>Share</span>
+    </button>
+
+  </div>
+
+</section>
+
+
+<section class="verse">
+
+  <div class="verse-background">
+    🎬
+  </div>
+
+  <div class="info">
+
+    <div class="profile-row">
+
+      <button
+        class="profile-picture"
+        onclick="openProfile('VerseCreator')">
+        🎬
+      </button>
+
+      <div class="username">
+        @VerseCreator
+      </div>
+
+    </div>
+
+    <div class="caption">
+
+      <div class="caption-title">
+        My latest Verse 🎬
+      </div>
+
+      Every day is another Verse.
+
+    </div>
+
+  </div>
+
+  <div class="actions">
+
+    <button
+      class="action"
+      onclick="likeVerse(this)">
+      ♡
+      <span>Like</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="openComments()">
+      💬
+      <span>Comments</span>
+    </button>
+
+    <button
+      class="action"
+      onclick="shareVerse()">
+      ↗️
+      <span>Share</span>
+    </button>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<!-- =========================
+     CREATE VERSE BUTTON
+========================= -->
+
+<button
+  class="create-button"
+  onclick="openCreate()"
+  aria-label="Create a Verse">
+  📷
+</button>
+
+
+<!-- =========================
+     COMMENTS
+========================= -->
+
+<div
+  id="commentsPanel"
+  class="panel">
+
+  <button
+    class="panel-back"
+    onclick="closePanel('commentsPanel')">
+    ←
+  </button>
+
+  <div class="panel-content">
+
+    <div class="panel-title">
+      Comments
+    </div>
+
+    <div class="comment">
+
+      <div class="comment-user">
+        @ClarkUser
+      </div>
+
+      Welcome to ClarkVerse! 🔥
+
+    </div>
+
+    <div class="comment">
+
+      <div class="comment-user">
+        @CaptainClark
+      </div>
+
+      This Verse is awesome!
+
+    </div>
+
+    <form
+      class="comment-form"
+      onsubmit="addComment(event)">
+
+      <input
+        id="commentInput"
+        class="comment-input"
+        placeholder="Add a comment..."
+        maxlength="300">
+
+      <button
+        class="comment-send"
+        type="submit">
+        ➤
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     PROFILE
+========================= -->
+
+<div
+  id="profilePanel"
+  class="panel">
+
+  <button
+    class="panel-back"
+    onclick="closePanel('profilePanel')">
+    ←
+  </button>
+
+  <div class="panel-content">
+
+    <div class="profile-avatar">
+      👤
+    </div>
+
+    <div
+      id="profileName"
+      class="profile-name">
+      @User
+    </div>
+
+    <div class="profile-bio">
+      Welcome to my ClarkVerse profile. 🏴‍☠️
+    </div>
+
+    <div class="profile-section">
+      Verses
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     CREATE VERSE
+========================= -->
+
+<div
+  id="createPanel"
+  class="panel">
+
+  <button
+    class="panel-back"
+    onclick="closeCreatePanel()">
+    ←
+  </button>
+
+  <div class="panel-content">
+
+    <div class="camera-area">
+
+      <div class="camera-icon">
+        📷
+      </div>
+
+      <div class="panel-title">
+        Create a Verse
+      </div>
+
+      <div class="camera-text">
+        Record a Verse or upload a video
+        from your device.
+      </div>
+
+
+      <!-- CAMERA -->
+
+      <button
+        id="permissionButton"
+        class="permission-button"
+        onclick="requestCameraAndMicrophone()">
+        📷 Allow Camera & Microphone
+      </button>
+
+
+      <div
+        id="cameraPreview"
+        class="camera-preview">
+
+        <video
+          id="previewVideo"
+          autoplay
+          muted
+          playsinline>
+        </video>
+
+      </div>
+
+
+      <button
+        id="recordButton"
+        class="record-button"
+        onclick="toggleRecording()"
+        style="display:none;">
+      </button>
+
+
+      <div
+        id="permissionStatus"
+        class="permission-status">
+      </div>
+
+
+      <!-- UPLOAD VIDEO -->
+
+      <div class="upload-section">
+
+        <div class="upload-divider">
+          OR
+        </div>
+
+        <button
+          class="upload-button"
+          onclick="document.getElementById('videoUpload').click()">
+          🎬 Upload Video
+        </button>
+
+        <input
+          id="videoUpload"
+          type="file"
+          accept="video/*"
+          onchange="handleVideoUpload(event)">
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     FULL SCREEN EDITOR
+========================= -->
+
+<div
+  id="editor"
+  class="editor">
+
+  <div class="editor-video-area">
+
+    <video
+      id="editorVideo"
+      class="editor-video"
+      controls
+      playsinline>
+    </video>
+
+    <div class="editor-top">
+
+      <button
+        class="editor-close"
+        onclick="closeEditor()">
+        ✕
+      </button>
+
+      <div class="editor-heading">
+        Edit your Verse
+      </div>
+
+      <div style="width:44px;"></div>
+
+    </div>
+
+  </div>
+
+
+  <div class="editor-bottom">
+
+    <div class="editor-tools">
+
+      <button
+        class="editor-tool"
+        onclick="showToast('Trim coming soon ✂️')">
+        ✂️ Trim
+      </button>
+
+      <button
+        class="editor-tool"
+        onclick="showToast('Text coming soon 🔤')">
+        🔤 Text
+      </button>
+
+      <button
+        class="editor-tool"
+        onclick="showToast('Filters coming soon ✨')">
+        ✨ Filters
+      </button>
+
+      <button
+        class="editor-tool"
+        onclick="showToast('Music coming soon 🎵')">
+        🎵 Music
+      </button>
+
+    </div>
+
+    <button
+      class="load-ship-button"
+      onclick="loadVerseOntoShip()">
+      🚢 Load the verse onto the ship?
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div
+  id="toast"
+  class="toast">
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function goBackToWelcome() {
+
+  window.location.href =
+    "https://yowspclark.github.io/clarkverse/";
+
+}
+
+
+/* =========================
+   LIKES
+========================= */
+
+function likeVerse(button) {
+
+  const liked =
+    button.classList.contains("liked");
+
+  if (liked) {
+
+    button.classList.remove("liked");
+
+    button.innerHTML =
+      "♡<span>Like</span>";
+
+  } else {
+
+    button.classList.add("liked");
+
+    button.innerHTML =
+      "♥<span>Liked</span>";
+
+  }
+
+}
+
+
+/* =========================
+   COMMENTS
+========================= */
+
+function openComments() {
+
+  document
+    .getElementById("commentsPanel")
+    .classList.add("open");
+
+}
+
+
+function addComment(event) {
+
+  event.preventDefault();
+
+  const input =
+    document.getElementById(
+      "commentInput"
+    );
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+    return;
+  }
+
+  const comment =
+    document.createElement("div");
+
+  comment.className =
+    "comment";
+
+  comment.innerHTML = `
+    <div class="comment-user">
+      @You
+    </div>
+    ${escapeHtml(text)}
+  `;
+
+  const form =
+    document.querySelector(
+      ".comment-form"
+    );
+
+  form.before(comment);
+
+  input.value = "";
+
+  showToast(
+    "Comment added 💬"
+  );
+
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+function openProfile(username) {
+
+  document
+    .getElementById("profileName")
+    .textContent =
+    "@" + username;
+
+  document
+    .getElementById("profilePanel")
+    .classList.add("open");
+
+}
+
+
+/* =========================
+   CREATE
+========================= */
+
+function openCreate() {
+
+  document
+    .getElementById("createPanel")
+    .classList.add("open");
+
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+let cameraStream = null;
+
+async function requestCameraAndMicrophone() {
+
+  const status =
+    document.getElementById(
+      "permissionStatus"
+    );
+
+  const button =
+    document.getElementById(
+      "permissionButton"
+    );
+
+  try {
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+
+      status.textContent =
+        "Camera access isn't supported by this browser.";
+
+      return;
+
+    }
+
+    status.textContent =
+      "Requesting camera and microphone permission...";
+
+
+    cameraStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video: {
+          facingMode: "user"
+        },
+
+        audio: true
+
+      });
+
+
+    const video =
+      document.getElementById(
+        "previewVideo"
+      );
+
+    video.srcObject =
+      cameraStream;
+
+    /*
+      IMPORTANT:
+      We deliberately do NOT mirror
+      the camera preview.
+    */
+
+    video.style.transform =
+      "none";
+
+
+    document
+      .getElementById(
+        "cameraPreview"
+      )
+      .classList.add("show");
+
+
+    document
+      .getElementById(
+        "recordButton"
+      )
+      .style.display =
+      "inline-block";
+
+
+    button.textContent =
+      "✅ Camera & Microphone Allowed";
+
+    button.style.background =
+      "#16834b";
+
+
+    status.textContent =
+      "You're ready to create a Verse! 🎥";
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    if (
+      error.name ===
+      "NotAllowedError"
+    ) {
+
+      status.textContent =
+        "Camera or microphone permission was denied.";
+
+    } else if (
+      error.name ===
+      "NotFoundError"
+    ) {
+
+      status.textContent =
+        "No camera or microphone was found.";
+
+    } else {
+
+      status.textContent =
+        "We couldn't access the camera and microphone.";
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   RECORDING
+========================= */
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let recording = false;
+
+function toggleRecording() {
+
+  if (!cameraStream) {
+
+    showToast(
+      "Allow camera and microphone first."
+    );
+
+    return;
+
+  }
+
+  const button =
+    document.getElementById(
+      "recordButton"
+    );
+
+
+  if (!recording) {
+
+    recordedChunks = [];
+
+
+    let options = {};
+
+    if (
+      MediaRecorder.isTypeSupported(
+        "video/webm;codecs=vp9,opus"
+      )
+    ) {
+
+      options.mimeType =
+        "video/webm;codecs=vp9,opus";
+
+    } else if (
+      MediaRecorder.isTypeSupported(
+        "video/webm"
+      )
+    ) {
+
+      options.mimeType =
+        "video/webm";
+
+    }
+
+
+    try {
+
+      mediaRecorder =
+        new MediaRecorder(
+          cameraStream,
+          options
+        );
+
+    } catch {
+
+      mediaRecorder =
+        new MediaRecorder(
+          cameraStream
+        );
+
+    }
+
+
+    mediaRecorder.ondataavailable =
+      function(event) {
+
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
+
+          recordedChunks.push(
+            event.data
+          );
+
+        }
+
+      };
+
+
+    mediaRecorder.onstop =
+      function() {
+
+        const blob =
+          new Blob(
+            recordedChunks,
+            {
+              type:
+                mediaRecorder.mimeType ||
+                "video/webm"
+            }
+          );
+
+        openEditorWithBlob(blob);
+
+        showToast(
+          "Verse recording finished! 🎬"
+        );
+
+      };
+
+
+    mediaRecorder.start();
+
+    recording = true;
+
+    button.classList.add(
+      "recording"
+    );
+
+    showToast(
+      "Recording your Verse..."
+    );
+
+
+  } else {
+
+    mediaRecorder.stop();
+
+    recording = false;
+
+    button.classList.remove(
+      "recording"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   UPLOAD VIDEO
+========================= */
+
+function handleVideoUpload(event) {
+
+  const file =
+    event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+
+  if (!file.type.startsWith("video/")) {
+
+    showToast(
+      "Please select a video."
+    );
+
+    return;
+
+  }
+
+
+  openEditorWithBlob(file);
+
+}
+
+
+/* =========================
+   OPEN EDITOR
+========================= */
+
+let editorVideoUrl = null;
+
+function openEditorWithBlob(blob) {
+
+  if (editorVideoUrl) {
+
+    URL.revokeObjectURL(
+      editorVideoUrl
+    );
+
+  }
+
+
+  editorVideoUrl =
+    URL.createObjectURL(blob);
+
+
+  const editorVideo =
+    document.getElementById(
+      "editorVideo"
+    );
+
+
+  editorVideo.src =
+    editorVideoUrl;
+
+
+  /*
+    IMPORTANT:
+    Never mirror uploaded or recorded
+    videos.
+  */
+
+  editorVideo.style.transform =
+    "none";
+
+
+  document
+    .getElementById("editor")
+    .classList.add("open");
+
+
+  editorVideo.play()
+    .catch(() => {});
+
+}
+
+
+/* =========================
+   LOAD VERSE ONTO SHIP
+========================= */
+
+function loadVerseOntoShip() {
+
+  showToast(
+    "Your Verse is ready to load onto the ship! 🚢"
+  );
+
+  /*
+    This is currently the UI step.
+
+    Later, this button will upload the
+    actual video to Supabase Storage and
+    create the Verse record in the database.
+  */
+
+}
+
+
+/* =========================
+   CLOSE EDITOR
+========================= */
+
+function closeEditor() {
+
+  const editor =
+    document.getElementById(
+      "editor"
+    );
+
+  const video =
+    document.getElementById(
+      "editorVideo"
+    );
+
+  video.pause();
+
+  video.removeAttribute(
+    "src"
+  );
+
+  video.load();
+
+  editor.classList.remove(
+    "open"
+  );
+
+  if (editorVideoUrl) {
+
+    URL.revokeObjectURL(
+      editorVideoUrl
+    );
+
+    editorVideoUrl =
+      null;
+
+  }
+
+}
+
+
+/* =========================
+   CLOSE PANELS
+========================= */
+
+function closePanel(id) {
+
+  document
+    .getElementById(id)
+    .classList.remove("open");
+
+}
+
+
+function closeCreatePanel() {
+
+  closePanel("createPanel");
+
+  stopCamera();
+
+}
+
+
+/* =========================
+   STOP CAMERA
+========================= */
+
+function stopCamera() {
+
+  if (cameraStream) {
+
+    cameraStream
+      .getTracks()
+      .forEach(
+        track => track.stop()
+      );
+
+    cameraStream = null;
+
+  }
+
+}
+
+
+/* =========================
+   SHARE
+========================= */
+
+async function shareVerse() {
+
+  const data = {
+
+    title:
+      "ClarkVerse",
+
+    text:
+      "Check out this Verse on ClarkVerse!",
+
+    url:
+      window.location.href
+
+  };
+
+
+  if (
+    navigator.share
+  ) {
+
+    try {
+
+      await navigator.share(
+        data
+      );
+
+    } catch {}
+
+  } else {
+
+    try {
+
+      await navigator.clipboard.writeText(
+        window.location.href
+      );
+
+      showToast(
+        "Verse link copied!"
+      );
+
+    } catch {
+
+      showToast(
+        "Sharing isn't available."
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   TOAST
+========================= */
+
+let toastTimer;
+
+function showToast(text) {
+
+  const toast =
+    document.getElementById(
+      "toast"
+    );
+
+  toast.textContent =
+    text;
+
+  toast.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimer
+  );
+
+  toastTimer =
+    setTimeout(
+      function() {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      2200
+    );
+
+}
+
+
+/* =========================
+   ESCAPE COMMENTS
+========================= */
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text;
+
+  return div.innerHTML;
+
+}
+
+
+/* =========================
+   PAGE CLOSE
+========================= */
+
+window.addEventListener(
+  "beforeunload",
+  function() {
+
+    stopCamera();
+
+    if (editorVideoUrl) {
+
+      URL.revokeObjectURL(
+        editorVideoUrl
+      );
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
