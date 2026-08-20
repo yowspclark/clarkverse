@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClarkVerse</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #02030a;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      overflow: hidden;
+    }
+    /* =========================
+       STAR GALAXY BACKGROUND
+    ========================= */
+    .screen {
+      width: 100%;
+      height: 100dvh;
+      min-height: 100vh;
+      position: relative;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      background:
+        radial-gradient(
+          ellipse at 50% 45%,
+          rgba(71, 83, 180, .28) 0%,
+          rgba(30, 38, 90, .18) 25%,
+          transparent 55%
+        ),
+        radial-gradient(
+          ellipse at 15% 20%,
+          rgba(88, 101, 242, .18),
+          transparent 40%
+        ),
+        radial-gradient(
+          ellipse at 85% 80%,
+          rgba(60, 90, 180, .15),
+          transparent 45%
+        ),
+        linear-gradient(
+          180deg,
+          #02030a 0%,
+          #050817 45%,
+          #02030a 100%
+        );
+    }
+    /* Tiny stars */
+    .screen::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .9;
+      background-image:
+        radial-gradient(circle, white 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(255,255,255,.8) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(150,180,255,.8) 1px, transparent 1.5px);
+      background-size:
+        83px 91px,
+        137px 149px,
+        191px 173px;
+      background-position:
+        10px 20px,
+        40px 70px,
+        90px 30px;
+      animation: starsMove 25s linear infinite;
+    }
+    /* Galaxy glow */
+    .screen::after {
+      content: "";
+      position: fixed;
+      width: 900px;
+      height: 300px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-18deg);
+      border-radius: 50%;
+      pointer-events: none;
+      background:
+        radial-gradient(
+          ellipse,
+          rgba(111, 126, 255, .18) 0%,
+          rgba(80, 95, 220, .09) 35%,
+          transparent 70%
+        );
+      filter: blur(35px);
+      opacity: .8;
+      animation: galaxyGlow 7s ease-in-out infinite;
+    }
+    .content {
+      position: relative;
+      z-index: 2;
+      width: calc(100% - 40px);
+      max-width: 420px;
+      text-align: center;
+      padding: 55px 0 40px;
+      animation: rise .8s ease-out;
+    }
+    /* =========================
+       LOGO
+    ========================= */
+    .logo {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 22px;
+      border-radius: 32px;
+      background:
+        linear-gradient(
+          145deg,
+          #5865f2,
+          #3945bd
+        );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 58px;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.6),
+        0 0 60px rgba(88,101,242,.25);
+      animation: float 3s ease-in-out infinite;
+    }
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      text-shadow:
+        0 3px 20px rgba(0,0,0,.8);
+    }
+    .subtitle {
+      margin: 12px auto 28px;
+      color: #aab4c7;
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 340px;
+    }
+    /* =========================
+       AUTH BOX
+    ========================= */
+    .auth-box {
+      width: 100%;
+      background:
+        rgba(5, 9, 24, .78);
+      border:
+        1px solid rgba(255,255,255,.09);
+      border-radius: 22px;
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      box-shadow:
+        0 20px 70px rgba(0,0,0,.55),
+        0 0 40px rgba(50,70,180,.08);
+    }
+    .auth-title {
+      font-size: 21px;
+      font-weight: 900;
+      margin-bottom: 18px;
+    }
+    .input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 0;
+      outline: 0;
+      border-radius: 14px;
+      background: rgba(38,49,73,.9);
+      color: white;
+      font-size: 15px;
+    }
+    .input::placeholder {
+      color: #9ba8bd;
+    }
+    .button {
+      width: 100%;
+      padding: 17px 18px;
+      border: 0;
+      border-radius: 16px;
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition:
+        transform .15s ease,
+        background .15s ease,
+        opacity .15s ease;
+    }
+    .button:active {
+      transform: scale(.97);
+    }
+    .board-button {
+      background: #5865f2;
+      box-shadow:
+        0 12px 35px rgba(0,0,0,.45);
+    }
+    .board-button:hover {
+      background: #6975ff;
+    }
+    .signin-button {
+      background: #263149;
+      margin-top: 10px;
+    }
+    .signin-button:hover {
+      background: #303b54;
+    }
+    .terms-button {
+      display: none;
+      background: #16834b;
+      margin-top: 15px;
+      animation: pop .35s ease-out;
+    }
+    .terms-button.show {
+      display: block;
+    }
+    .switch {
+      margin-top: 16px;
+      color: #9ba8bd;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .switch strong {
+      color: white;
+    }
+    .status {
+      min-height: 22px;
+      margin-top: 14px;
+      color: #9ba8bd;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .status.success {
+      color: #63e6a3;
+    }
+    .status.error {
+      color: #ff7180;
+    }
+    .verified-box {
+      display: none;
+      margin-top: 15px;
+      padding: 14px;
+      border-radius: 15px;
+      background:
+        rgba(22,131,75,.16);
+      border:
+        1px solid rgba(99,230,163,.2);
+      color: #63e6a3;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .verified-box.show {
+      display: block;
+      animation: pop .35s ease-out;
+    }
+    .footer {
+      margin-top: 22px;
+      color: #66728a;
+      font-size: 12px;
+    }
+    .ship {
+      display: inline-block;
+      margin-right: 7px;
+      animation: shipBob 2s ease-in-out infinite;
+    }
+    /* =========================
+       ANIMATIONS
+    ========================= */
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+    @keyframes glow {
+      0%, 100% {
+        opacity: .7;
+        transform: translateX(-50%) scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.1);
+      }
+    }
+    @keyframes galaxyGlow {
+      0%, 100% {
+        opacity: .55;
+        transform: translate(-50%, -50%) rotate(-18deg) scale(1);
+      }
+      50% {
+        opacity: .9;
+        transform: translate(-50%, -50%) rotate(-18deg) scale(1.08);
+      }
+    }
+    @keyframes starsMove {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-40px);
+      }
+    }
+    @keyframes shipBob {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-3px) rotate(-2deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <div class="content">
+      <div class="logo">
+        🏴‍☠️
+      </div>
+      <h1>
+        ClarkVerse
+      </h1>
+      <div class="subtitle">
+        Your verses. Your crew. Your ship.
+        <br>
+        Welcome aboard.
+      </div>
+      <div class="auth-box">
+        <div
+          id="authTitle"
+          class="auth-title">
+          Create your account
+        </div>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          placeholder="Email"
+          autocomplete="email"
+        >
+        <input
+          id="password"
+          class="input"
+          type="password"
+          placeholder="Password"
+          autocomplete="new-password"
+        >
+        <button
+          id="signupButton"
+          class="button board-button"
+          onclick="signUp()">
+          <span class="ship">🚢</span>
+          Board the Ship
+        </button>
+        <button
+          id="signinButton"
+          class="button signin-button"
+          onclick="signIn()">
+          Sign Back In
+        </button>
+        <button
+          id="termsButton"
+          class="button terms-button"
+          onclick="readTerms()">
+          📜 Read the Terms
+        </button>
+        <div
+          id="verifiedBox"
+          class="verified-box">
+          ✅ Email verified.
+          <br>
+          Read the Terms to continue.
+        </div>
+        <div
+          id="status"
+          class="status">
+        </div>
+        <div
+          id="switchText"
+          class="switch"
+          onclick="toggleMode()">
+          Already have an account?
+          <strong>Sign back in</strong>
+        </div>
+      </div>
+      <div class="footer">
+        Welcome to ClarkVerse 🏴‍☠️
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL =
+      "https://berkdlglcktrpsrmcfxk.supabase.co";
+    const SUPABASE_KEY =
+      "sb_publishable_VcCBURG2CreUEmvkxDa3RQ_EkK1WZlq";
+    const supabase =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+    const emailInput =
+      document.getElementById("email");
+    const passwordInput =
+      document.getElementById("password");
+    const status =
+      document.getElementById("status");
+    const termsButton =
+      document.getElementById("termsButton");
+    const verifiedBox =
+      document.getElementById("verifiedBox");
+    const authTitle =
+      document.getElementById("authTitle");
+    const signupButton =
+      document.getElementById("signupButton");
+    const signinButton =
+      document.getElementById("signinButton");
+    const switchText =
+      document.getElementById("switchText");
+    let signInMode = false;
+    async function signUp() {
+      const email =
+        emailInput.value.trim();
+      const password =
+        passwordInput.value;
+      if (!email || !password) {
+        showStatus(
+          "Enter an email and password first.",
+          "error"
+        );
+        return;
+      }
+      if (password.length < 6) {
+        showStatus(
+          "Your password needs to be at least 6 characters.",
+          "error"
+        );
+        return;
+      }
+      setLoading(
+        signupButton,
+        "Creating account..."
+      );
+      const {
+        data,
+        error
+      } =
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname
+        }
+      });
+      resetButton(
+        signupButton,
+        "🚢 Board the Ship"
+      );
+      if (error) {
+        showStatus(
+          error.message,
+          "error"
+        );
+        return;
+      }
+      if (!data.session) {
+        showStatus(
+          "Check your email and verify your account. Then come back here.",
+          "success"
+        );
+        return;
+      }
+      await checkAuth();
+    }
+    async function signIn() {
+      const email =
+        emailInput.value.trim();
+      const password =
+        passwordInput.value;
+      if (!email || !password) {
+        showStatus(
+          "Enter your email and password first.",
+          "error"
+        );
+        return;
+      }
+      setLoading(
+        signinButton,
+        "Signing in..."
+      );
+      const {
+        data,
+        error
+      } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      resetButton(
+        signinButton,
+        "Sign Back In"
+      );
+      if (error) {
+        showStatus(
+          error.message,
+          "error"
+        );
+        return;
+      }
+      if (!data.user) {
+        showStatus(
+          "We couldn't find your account.",
+          "error"
+        );
+        return;
+      }
+      await checkAuth();
+    }
+    async function checkAuth() {
+      const {
+        data,
+        error
+      } =
+      await supabase.auth.getUser();
+      if (error || !data.user) {
+        hideTerms();
+        return;
+      }
+      const user =
+        data.user;
+      if (user.email_confirmed_at) {
+        showTerms();
+        showStatus(
+          "You're verified. Welcome aboard! 🏴‍☠️",
+          "success"
+        );
+      } else {
+        hideTerms();
+        showStatus(
+          "Please verify your email before continuing.",
+          "error"
+        );
+      }
+    }
+    function showTerms() {
+      termsButton.classList.add("show");
+      verifiedBox.classList.add("show");
+    }
+    function hideTerms() {
+      termsButton.classList.remove("show");
+      verifiedBox.classList.remove("show");
+    }
+    function readTerms() {
+      window.location.href =
+        "terms.html";
+    }
+    function toggleMode() {
+      signInMode =
+        !signInMode;
+      if (signInMode) {
+        authTitle.textContent =
+          "Welcome back";
+        signupButton.style.display =
+          "none";
+        signinButton.style.display =
+          "block";
+        passwordInput.autocomplete =
+          "current-password";
+        switchText.innerHTML =
+          "Need an account? <strong>Create one</strong>";
+      } else {
+        authTitle.textContent =
+          "Create your account";
+        signupButton.style.display =
+          "block";
+        signinButton.style.display =
+          "block";
+        passwordInput.autocomplete =
+          "new-password";
+        switchText.innerHTML =
+          "Already have an account? <strong>Sign back in</strong>";
+      }
+      status.textContent = "";
+    }
+    supabase.auth.onAuthStateChange(
+      async function(event, session) {
+        if (
+          event === "SIGNED_IN" ||
+          event === "INITIAL_SESSION" ||
+          event === "TOKEN_REFRESHED"
+        ) {
+          if (
+            session &&
+            session.user &&
+            session.user.email_confirmed_at
+          ) {
+            showTerms();
+            showStatus(
+              "You're verified. Welcome aboard! 🏴‍☠️",
+              "success"
+            );
+          }
+        }
+      }
+    );
+    checkAuth();
+    function showStatus(
+      message,
+      type = ""
+    ) {
+      status.textContent =
+        message;
+      status.className =
+        "status " + type;
+    }
+    function setLoading(
+      button,
+      text
+    ) {
+      button.disabled = true;
+      button.dataset.originalText =
+        button.innerHTML;
+      button.innerHTML =
+        text;
+      button.style.opacity =
+        ".7";
+    }
+    function resetButton(
+      button,
+      text
+    ) {
+      button.disabled = false;
+      button.innerHTML =
+        text;
+      button.style.opacity =
+        "1";
+    }
+  </script>
+</body>
+</html>
